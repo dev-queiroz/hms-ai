@@ -96,5 +96,37 @@ export const pacienteService = {
       throw new Error(error.message)
     }
     return true
+  },
+
+  async getProntuarioByPatientId(patientId: string): Promise<Database['public']['Tables']['prontuarios']['Row'] | null> {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('prontuarios')
+      .select('*')
+      .eq('patient_id', patientId)
+      .single()
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 = zero rows
+      console.error('Erro ao buscar prontuário:', error)
+      return null
+    }
+    // @ts-ignore - bypassing strict generic check
+    return data
+  },
+
+  async getTriagensByPatientId(patientId: string): Promise<Database['public']['Tables']['triagens']['Row'][]> {
+    const supabase = await createClient()
+    const { data, error } = await supabase
+      .from('triagens')
+      .select('*')
+      .eq('patient_id', patientId)
+      .order('data_hora', { ascending: false })
+
+    if (error) {
+      console.error('Erro ao buscar triagens:', error)
+      return []
+    }
+    // @ts-ignore
+    return data || []
   }
 }
