@@ -83,6 +83,7 @@ export interface Database {
         Row: {
           id: string
           patient_id: string | null
+          professional_id: string | null
           sinais_vitais: Json | null
           sintomas: string | null
           classificacao_risco: string | null
@@ -91,6 +92,7 @@ export interface Database {
         Insert: {
           id?: string
           patient_id?: string | null
+          professional_id?: string | null
           sinais_vitais?: Json | null
           sintomas?: string | null
           classificacao_risco?: string | null
@@ -99,6 +101,7 @@ export interface Database {
         Update: {
           id?: string
           patient_id?: string | null
+          professional_id?: string | null
           sinais_vitais?: Json | null
           sintomas?: string | null
           classificacao_risco?: string | null

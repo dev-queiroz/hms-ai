@@ -4,6 +4,8 @@ import Link from "next/link"
 import { ChevronLeft, FileText, Activity, AlertCircle, Clock, Plus, Sparkles, User, Shield } from "lucide-react"
 import { pacienteService } from "@/lib/services/paciente.service"
 import { Label } from "@/components/ui/label"
+import { AISummary } from "@/components/common/AISummary"
+import { Download } from "lucide-react"
 import { notFound } from "next/navigation"
 
 export const metadata = {
@@ -62,10 +64,19 @@ export default async function PacienteDetailPage({
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button className="bg-teal-600 hover:bg-teal-700 text-white">
-            <Sparkles className="w-4 h-4 mr-2" />
-            Resumo IA
+          <Button asChild variant="outline" className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+            <Link href={`/api/pacientes/${resolvedParams.id}/pdf`} target="_blank">
+              <Download className="w-4 h-4 mr-2" />
+              PDF
+            </Link>
           </Button>
+          <Button asChild variant="outline" className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700">
+            <Link href={`/dashboard/pacientes/${resolvedParams.id}/triagem/nova`}>
+              <Activity className="w-4 h-4 mr-2" />
+              Nova Triagem
+            </Link>
+          </Button>
+          <AISummary patientId={resolvedParams.id} />
           <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white">
             <Link href={`/dashboard/pacientes/${resolvedParams.id}/prontuario/nova`}>
               <Plus className="w-4 h-4 mr-2" />
@@ -79,6 +90,8 @@ export default async function PacienteDetailPage({
         
         {/* COLUNA ESQUERDA: INFOS E TRIAGENS (1/4) */}
         <div className="space-y-6 lg:col-span-1">
+          {/* PARECER IA SE JÁ EXISTIR NO TOPO DA SIDEBAR? Opcional se já estiver no botão.
+              Vou deixar apenas dentro do AISummary que já se transforma em card ao carregar. */}
           <Card className="bg-slate-900 border-slate-800">
             <CardHeader className="pb-3 border-b border-slate-800">
               <CardTitle className="text-sm font-medium text-slate-400 flex items-center gap-2 uppercase tracking-wide">
@@ -159,6 +172,11 @@ export default async function PacienteDetailPage({
                       </div>
                       <p className="text-xs text-slate-300 line-clamp-2">
                          {triagem.sintomas || 'Sem queixas registradas'}
+                         {(triagem.sinais_vitais as any)?.temperatura && (
+                           <span className="block text-[10px] text-teal-500 mt-1">
+                             T: {(triagem.sinais_vitais as any).temperatura}ºC | PA: {(triagem.sinais_vitais as any).pressao_arterial}
+                           </span>
+                         )}
                       </p>
                     </div>
                   ))}

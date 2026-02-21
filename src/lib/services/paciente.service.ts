@@ -128,5 +128,21 @@ export const pacienteService = {
     }
     // @ts-ignore
     return data || []
+  },
+
+  async createTriagem(data: any) {
+    const supabase = await createClient()
+    const { data: newTriagem, error } = await supabase
+      .from('triagens')
+      // @ts-ignore
+      .insert([data])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Erro ao criar triagem:', error)
+      throw new Error(error.message)
+    }
+    return newTriagem
   }
 }
