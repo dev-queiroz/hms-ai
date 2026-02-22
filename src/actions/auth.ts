@@ -41,9 +41,16 @@ export async function loginAction(
   }
 
   // 2. Buscar o papel (role) do funcionário na tabela
-  // Por enquanto, mockando como ADMINISTRADOR_PRINCIPAL até ter a tabela
-  // const { data: employee } = await supabase.from('funcionario').select('role').eq('user_id', data.user.id).single()
-  const role = 'ADMINISTRADOR_PRINCIPAL'
+  const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
+  const supabaseAdmin = createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!)
+  
+  const { data: professional } = await supabaseAdmin
+    .from('professionals')
+    .select('role')
+    .eq('user_id', data.user.id)
+    .single()
+    
+  const role = professional?.role || 'professional'
 
   // 3. Definir cookies (Supabase SSR já define os de sessão, mas adicionamos extras se necessário)
   const cookieStore = await cookies()
@@ -71,4 +78,21 @@ export async function logoutAction() {
   const cookieStore = await cookies()
   cookieStore.delete('access_token')
   cookieStore.delete('user_role')
+}
+
+export async function getHeaderUserInfoAction() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
+  const supabaseAdmin = createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_KEY!)
+  
+  const { data } = await supabaseAdmin
+    .from('professionals')
+    .select('nome, cargo')
+    .eq('user_id', user.id)
+    .single()
+    
+  return data
 }

@@ -1,11 +1,10 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ChevronLeft, FileText, Activity, AlertCircle, Clock, Plus, Sparkles, User, Shield } from "lucide-react"
+import { ChevronLeft, FileText, Activity, Clock, Plus, User, Shield, Download, Pencil } from "lucide-react"
 import { pacienteService } from "@/lib/services/paciente.service"
 import { Label } from "@/components/ui/label"
 import { AISummary } from "@/components/common/AISummary"
-import { Download } from "lucide-react"
 import { notFound } from "next/navigation"
 
 export const metadata = {
@@ -152,7 +151,7 @@ export default async function PacienteDetailPage({
                   Sem triagens.
                 </div>
               ) : (
-                <div className="divide-y divide-slate-800/50">
+                <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar divide-y divide-slate-800/50">
                   {triagens.map((triagem) => (
                     <div key={triagem.id} className="p-4 hover:bg-slate-800/20 transition-colors">
                       <div className="flex justify-between items-center mb-1">
@@ -209,30 +208,32 @@ export default async function PacienteDetailPage({
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-800">
-                  {historicoNotas.map((nota, index) => (
-                    <div key={index} className="relative flex items-start gap-6 pl-1 group">
-                      {/* Timeline Dot */}
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full border border-slate-700 bg-slate-900 shadow shrink-0 z-10 text-teal-500 mt-1">
-                        <FileText className="w-4 h-4" />
-                      </div>
-                      
-                      <div className="flex-1 bg-slate-800/20 p-5 rounded-lg border border-slate-800/50 hover:border-slate-700 transition-all shadow-sm">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                          <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
-                            <span className="font-bold text-slate-200">{nota.profissional || 'Profissional'}</span>
+                <div className="max-h-[600px] overflow-y-auto pr-4 custom-scrollbar">
+                  <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-slate-800">
+                    {historicoNotas.map((nota, index) => (
+                      <div key={index} className="relative flex items-start gap-6 pl-1 group">
+                        {/* Timeline Dot */}
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full border border-slate-700 bg-slate-900 shadow shrink-0 z-10 text-teal-500 mt-1">
+                          <FileText className="w-4 h-4" />
+                        </div>
+                        
+                        <div className="flex-1 bg-slate-800/20 p-5 rounded-lg border border-slate-800/50 hover:border-slate-700 transition-all shadow-sm">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
+                              <span className="font-bold text-slate-200">{nota.profissional || 'Profissional'}</span>
+                            </div>
+                            <span className="text-[11px] font-mono text-slate-500 bg-slate-900/50 px-2 py-1 rounded">
+                              {nota.data ? new Date(nota.data).toLocaleString('pt-BR') : 'Sem data'}
+                            </span>
                           </div>
-                          <span className="text-[11px] font-mono text-slate-500 bg-slate-900/50 px-2 py-1 rounded">
-                            {nota.data ? new Date(nota.data).toLocaleString('pt-BR') : 'Sem data'}
-                          </span>
-                        </div>
-                        <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                          {nota.descricao || (typeof nota === 'string' ? nota : JSON.stringify(nota, null, 2))}
+                          <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+                            {nota.descricao || (typeof nota === 'string' ? nota : JSON.stringify(nota, null, 2))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </CardContent>

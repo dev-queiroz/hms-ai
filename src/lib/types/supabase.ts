@@ -79,6 +79,35 @@ export interface Database {
           contato?: string
         }
       }
+      agendamentos: {
+        Row: {
+          id: string
+          patient_id: string | null
+          professional_id: string | null
+          data_hora: string
+          tipo: string | null
+          prioridade: boolean | null
+          id_unidades_saude: string | null
+        }
+        Insert: {
+          id?: string
+          patient_id?: string | null
+          professional_id?: string | null
+          data_hora: string
+          tipo?: string | null
+          prioridade?: boolean | null
+          id_unidades_saude?: string | null
+        }
+        Update: {
+          id?: string
+          patient_id?: string | null
+          professional_id?: string | null
+          data_hora?: string
+          tipo?: string | null
+          prioridade?: boolean | null
+          id_unidades_saude?: string | null
+        }
+      }
       triagens: {
         Row: {
           id: string
@@ -126,6 +155,29 @@ export interface Database {
           patient_id?: string | null
           history?: Json
           updated_at?: string
+        }
+      }
+      prescricoes: {
+        Row: {
+          id: string
+          patient_id: string | null
+          professional_id: string | null
+          detalhes: Json | null
+          data: string
+        }
+        Insert: {
+          id?: string
+          patient_id?: string | null
+          professional_id?: string | null
+          detalhes?: Json | null
+          data?: string
+        }
+        Update: {
+          id?: string
+          patient_id?: string | null
+          professional_id?: string | null
+          detalhes?: Json | null
+          data?: string
         }
       }
     }

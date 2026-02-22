@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { FormError } from '@/components/common/FormError'
 import { createPacienteAction } from '@/actions/paciente'
+import { masks } from '@/lib/utils/masks'
 
 export default function NovoPacientePage() {
   const router = useRouter()

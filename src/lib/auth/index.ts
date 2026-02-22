@@ -17,7 +17,7 @@ export async function getCurrentUser(): Promise<UserSession | null> {
   return {
     id: user.id,
     email: user.email!,
-    role: roleCookie || 'ADMINISTRADOR_PRINCIPAL', // Default role for now
+    role: roleCookie || 'admin', // Default role for now
   }
 }
 

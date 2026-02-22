@@ -19,7 +19,7 @@ export function useAuth() {
         setUser({
           id: session.user.id,
           email: session.user.email!,
-          role: 'ADMINISTRADOR_PRINCIPAL'
+          role: 'admin'
         })
       } else {
         setUser(null)
@@ -34,7 +34,7 @@ export function useAuth() {
         setUser({
           id: session.user.id,
           email: session.user.email!,
-          role: 'ADMINISTRADOR_PRINCIPAL'
+          role: 'admin'
         })
       } else {
         setUser(null)

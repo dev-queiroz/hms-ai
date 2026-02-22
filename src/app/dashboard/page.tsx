@@ -105,8 +105,8 @@ export default async function DashboardPage() {
               <div className="flex items-start gap-4 p-3 bg-rose-500/10 border border-rose-500/20 rounded-lg">
                 <AlertTriangle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-bold text-rose-200">Potencial de Surto: Dengue</h4>
-                  <p className="text-xs text-rose-300/70">Aumento de 23% em casos febris nas últimas 48h. A IA recomenda triagem prioritária para cefaleia retro-orbital.</p>
+                  <h4 className="text-sm font-bold text-rose-200">Resumo Semanal de IA</h4>
+                  <p className="text-xs text-rose-300/70">Análise de triagens indica estabilidade nos quadros respiratórios. Recomendamos atenção redobrada à higienização das áreas comuns devido ao aumento da umidade local.</p>
                 </div>
               </div>
               <Button asChild variant="ghost" className="w-full text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/5">

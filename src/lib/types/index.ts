@@ -1,4 +1,4 @@
-export type UserRole = 'ADMINISTRADOR_PRINCIPAL' | 'MEDICO' | 'ENFERMEIRO';
+export type UserRole = 'admin' | 'professional';
 
 export interface UserSession {
   id: string;

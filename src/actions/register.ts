@@ -7,7 +7,11 @@ const registerSchema = z.object({
   fullName: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres'),
   email: z.string().email('E-mail inválido'),
   password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres'),
-  adminSecret: z.string()
+  crm_coren: z.string().min(1, 'CRM/COREN obrigatório'),
+  especializacao: z.string().optional(),
+  cargo: z.string().optional(),
+  role: z.enum(['admin', 'professional']).default('professional'),
+  adminSecret: z.string().optional()
 })
 
 export type RegisterState = {
@@ -26,41 +30,50 @@ export async function registerAdminAction(
     return { error: parsed.error.issues[0].message }
   }
 
-  if (parsed.data.adminSecret !== process.env.ADMIN_SECRET) {
-    return { error: 'Chave Administrativa inválida.' }
+  // Admins precisam da chave secreta
+  if (parsed.data.role === 'admin') {
+    if (parsed.data.adminSecret !== process.env.ADMIN_SECRET) {
+      return { error: 'Chave Administrativa inválida.' }
+    }
   }
 
-  const supabase = await createClient()
+  // Bypass RLS for registration using Service Role Key
+  // We use createClient from @supabase/supabase-js directly to avoid SSR cookies logic for the admin insert
+  const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY!
+  const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseKey)
 
   // 1. Criar Auth User
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
     email: parsed.data.email,
     password: parsed.data.password,
-    options: {
-      data: {
-        role: 'ADMINISTRADOR_PRINCIPAL'
-      }
+    email_confirm: true,
+    user_metadata: {
+      role: parsed.data.role
     }
   })
 
   if (authError || !authData.user) {
-    console.error('Erro de signUp admin:', authError)
+    console.error('Erro de signUp:', authError)
     return { error: 'Falha ao registrar credenciais. ' + (authError?.message || '') }
   }
 
-  // 2. Inserir na tabela public.professionals com os mesmos dados mapeados
+  // 2. Inserir na tabela professionals com id = auth.user.id (FK primária)
   // @ts-ignore
-  const { error: dbError } = await supabase.from('professionals').insert([{
-    user_id: authData.user.id,
+  const { error: dbError } = await supabaseAdmin.from('professionals').insert([{
+    id: authData.user.id,          // PK
+    user_id: authData.user.id,     // Link para auth.users.id
     nome: parsed.data.fullName,
-    role: 'ADMINISTRADOR_PRINCIPAL',
-    crm_coren: 'ADMIN-000',
-    cargo: 'Administrador do Sistema'
+    role: parsed.data.role,
+    crm_coren: parsed.data.crm_coren,
+    especializacao: parsed.data.especializacao || null,
+    cargo: parsed.data.cargo || null,
   }])
 
   if (dbError) {
-    console.error('Erro ao salvar info do profissional:', dbError)
-    return { error: 'Usuário cadastrado, mas falha ao vincular perfil.' }
+    console.error('Erro ao salvar profissional:', dbError)
+    return { error: 'Usuário criado, mas falha ao vincular perfil: ' + dbError.message }
   }
 
   return { success: true }

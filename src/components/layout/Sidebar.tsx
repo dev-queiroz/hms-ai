@@ -8,7 +8,9 @@ import {
   LayoutDashboard, 
   Brain, 
   LogOut,
-  Settings
+  Stethoscope,
+  FileText,
+  Building2
 } from 'lucide-react'
 import { logoutAction } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
@@ -20,14 +22,39 @@ const NAV_ITEMS = [
     icon: LayoutDashboard,
   },
   {
+    title: 'Consultas',
+    href: '/dashboard/consultas',
+    icon: Stethoscope, // using Stethoscope as it is already imported; or we can import Calendar
+  },
+  {
+    title: 'Prontuários',
+    href: '/dashboard/prontuarios',
+    icon: FileText,
+  },
+  {
+    title: 'Prescrições',
+    href: '/dashboard/prescricoes',
+    icon: FileText, // We can reuse FileText, or Pill if available, let's use FileText
+  },
+  {
     title: 'Pacientes',
     href: '/dashboard/pacientes',
     icon: Users,
   },
   {
+    title: 'Unidades de Saúde',
+    href: '/dashboard/unidades',
+    icon: Building2,
+  },
+  {
     title: 'Inteligência Artificial',
     href: '/dashboard/ia',
     icon: Brain,
+  },
+  {
+    title: 'Profissionais',
+    href: '/dashboard/professionals',
+    icon: Stethoscope,
   }
 ]
 

@@ -11,6 +11,7 @@ import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { FormError } from '@/components/common/FormError'
 import { createTriagemAction } from '@/actions/triagem'
 import { Activity } from 'lucide-react'
+import { masks } from '@/lib/utils/masks'
 
 export default function NovaTriagemPage({
   params,
@@ -118,7 +119,7 @@ export default function NovaTriagemPage({
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="pressao_arterial" className="text-slate-400 text-[11px] uppercase font-bold">Pressão (PA)</Label>
-                <Input name="pressao_arterial" id="pressao_arterial" placeholder="120/80" className="bg-slate-800/50 border-slate-700 text-slate-200" />
+                <Input name="pressao_arterial" id="pressao_arterial" placeholder="120/80" className="bg-slate-800/50 border-slate-700 text-slate-200" onChange={(e) => e.target.value = masks.pressao(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="temperatura" className="text-slate-400 text-[11px] uppercase font-bold">Temp (ºC)</Label>

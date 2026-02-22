@@ -51,7 +51,7 @@ export async function createTriagemAction(
       const { data: professional } = await supabase
         .from('professionals')
         .select('id')
-        .eq('id', authData.user.id)
+        .eq('user_id', authData.user.id)
         .single()
       
       if (professional) {

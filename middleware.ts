@@ -21,9 +21,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Se o usuário tentar acessar login/register estando logado, redireciona para o dashboard
-  if ((pathname.startsWith('/login') || pathname.startsWith('/register-admin')) && token) {
+  // Se o usuário tentar acessar login estando logado, redireciona para o dashboard
+  // Admins logados podem acessar /register-admin para criar novos usuários, mas não-admins são bloqueados
+  if (pathname.startsWith('/login') && token) {
      return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  // Role-Based Access Control (RBAC)
+  const role = request.cookies.get('user_role')?.value
+  const isAdminRoute = pathname.startsWith('/dashboard/professionals') || pathname.startsWith('/register-admin')
+  
+  if (isAdminRoute && role !== 'ADMINISTRADOR_PRINCIPAL') {
+    // Redireciona usuários sem permissão para o dashboard inicial
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return NextResponse.next()
