@@ -12,15 +12,14 @@ export type UnidadeSaudeSummary = {
 }
 
 export const unidadeService = {
-  async getUnidades(): Promise<UnidadeSaudeSummary[]> {
-    const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_KEY!
-    )
+  async getUnidades(page: number = 1, limit: number = 20): Promise<{ data: UnidadeSaudeSummary[], count: number }> {
+    const supabase = await createClient()
+
+    const from = (page - 1) * limit
+    const to = from + limit - 1
 
     // @ts-ignore
-    const { data: unidades, error } = await supabaseAdmin
+    const { data: unidades, error, count } = await supabase
       .from('unidades_saude')
       .select(`
         id,
@@ -33,15 +32,16 @@ export const unidadeService = {
         professionals!responsavel_id (
           nome
         )
-      `)
+      `, { count: 'exact' })
       .order('nome', { ascending: true })
+      .range(from, to)
 
     if (error) {
       console.error('Erro ao buscar unidades de saúde:', error)
-      return []
+      return { data: [], count: 0 }
     }
 
-    return (unidades || []).map((u: any) => ({
+    const data = (unidades || []).map((u: any) => ({
       id: u.id,
       nome: u.nome,
       tipo: u.tipo || 'Não Definido',
@@ -51,6 +51,8 @@ export const unidadeService = {
       responsavel_nome: u.professionals?.nome || 'Não Atribuído',
       created_at: u.created_at
     }))
+
+    return { data, count: count || 0 }
   },
 
   async getUnidadeById(id: string) {
@@ -69,11 +71,39 @@ export const unidadeService = {
       .eq('id', id)
       .single()
 
-    if (error) {
-      console.error('Erro ao buscar unidade de saúde:', error)
-      return null
-    }
-
     return data as any
+  },
+
+  async createUnidade(data: any) {
+    const supabase = await createClient()
+    const { data: newUnidade, error } = await supabase
+      .from('unidades_saude')
+      // @ts-ignore
+      .insert([data])
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Erro ao criar unidade de saúde:', error)
+      throw new Error(error.message)
+    }
+    return newUnidade
+  },
+
+  async updateUnidade(id: string, data: any) {
+    const supabase = await createClient()
+    const { data: updatedUnidade, error } = await supabase
+      .from('unidades_saude')
+      // @ts-ignore
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Erro ao atualizar unidade de saúde:', error)
+      throw new Error(error.message)
+    }
+    return updatedUnidade
   }
 }

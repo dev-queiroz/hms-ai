@@ -8,8 +8,10 @@ export const metadata = {
   title: 'Detalhes da Prescrição | Hospital IA',
 }
 
-export default async function PrescricaoDetalhesPage({ params }: { params: { id: string } }) {
-  const prescricao = await prescricaoService.getPrescricaoById(params.id)
+export default async function PrescricaoDetalhesPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params
+  const { id } = resolvedParams
+  const prescricao = await prescricaoService.getPrescricaoById(id)
 
   if (!prescricao) {
     return (

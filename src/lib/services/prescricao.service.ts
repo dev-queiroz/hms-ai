@@ -12,14 +12,10 @@ export type PrescricaoSummary = {
 
 export const prescricaoService = {
   async getPrescricoes(): Promise<PrescricaoSummary[]> {
-    const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_KEY!
-    )
+    const supabase = await createClient()
 
     // @ts-ignore
-    const { data: prescricoes, error } = await supabaseAdmin
+    const { data: prescricoes, error } = await supabase
       .from('prescricoes')
       .select(`
         *,
@@ -105,6 +101,33 @@ export const prescricaoService = {
 
     if (error) {
       throw new Error(`Erro ao criar prescrição: ${error.message}`)
+    }
+
+    return (prescricao as any)
+  },
+
+  async updatePrescricao(id: string, data: {
+    medicamentos: any[]
+    observacoes?: string
+    cid10?: string
+  }) {
+    const supabase = await createClient()
+
+    const { data: prescricao, error } = await (supabase
+      .from('prescricoes') as any)
+      .update({
+        detalhes: {
+          medicamentos: data.medicamentos,
+          observacoes: data.observacoes,
+          cid10: data.cid10
+        }
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      throw new Error(`Erro ao atualizar prescrição: ${error.message}`)
     }
 
     return (prescricao as any)

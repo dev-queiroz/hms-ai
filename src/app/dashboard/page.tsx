@@ -3,9 +3,25 @@ import { Users, Activity, AlertTriangle, TrendingUp, Calendar, ChevronRight } fr
 import { dashboardService } from "@/lib/services/dashboard.service"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { createClient } from "@/lib/supabase/server"
+import { redirect } from "next/navigation"
 
 export default async function DashboardPage() {
-  const stats = await dashboardService.getStats()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: professional } = await (supabase
+    .from('professionals') as any)
+    .select('role, nome, unidade_saude_id, unidades_saude(nome)')
+    .eq('user_id', user.id)
+    .single()
+
+  const isAdmin = (professional as any)?.role === 'admin'
+  const unitId = isAdmin ? undefined : (professional as any)?.unidade_saude_id
+  const unitName = (professional as any)?.unidades_saude?.nome || 'Gestão Global'
+
+  const stats = await dashboardService.getStats(unitId)
 
   const cards = [
     {
@@ -45,8 +61,12 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-100">Painel de Controle</h1>
-        <p className="text-slate-400">Visão geral em tempo real da unidade de saúde.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-100 italic">
+          Olá, {(professional as any)?.nome?.split(' ')[0] || 'Profissional'}
+        </h1>
+        <p className="text-slate-400">
+          Unidade: <span className="text-indigo-400 font-semibold">{unitName}</span>
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

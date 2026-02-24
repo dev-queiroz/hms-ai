@@ -15,6 +15,7 @@ export default function PerfilPage() {
   const [saving, setSaving] = useState(false)
   const [profile, setProfile] = useState<any | null>(null)
   const [user, setUser] = useState<any>(null)
+  const [units, setUnits] = useState<any[]>([])
 
   useEffect(() => {
     async function loadData() {
@@ -31,6 +32,9 @@ export default function PerfilPage() {
         
         setProfile(prof)
       }
+
+      const { data: unidades } = await supabase.from('unidades_saude').select('id, nome').order('nome')
+      setUnits(unidades || [])
       setLoading(false)
     }
     loadData()
@@ -44,22 +48,53 @@ export default function PerfilPage() {
     const nome = formData.get('nome') as string
     const cargo = formData.get('cargo') as string
     const especializacao = formData.get('especializacao') as string
+    const unidade_saude_id = formData.get('unidade_saude_id') as string
+    const role = formData.get('role') as string
 
     const supabase = createClient()
-    const { error } = await supabase
-      .from('professionals')
-      .update({
-        nome,
-        cargo,
-        especializacao,
-      })
-      .eq('user_id', user.id)
+    
+    if (!user) {
+      toast.error('Erro: Usuário não identificado. Recarregue a página.')
+      setSaving(false)
+      return
+    }
+
+    let error
+
+    if (profile?.id) {
+      const { error: updateError } = await (supabase
+        .from('professionals') as any)
+        .update({ nome, cargo, especializacao, unidade_saude_id, role })
+        .eq('user_id', user.id)
+      error = updateError
+    } else {
+      const { data: newProf, error: insertError } = await (supabase
+        .from('professionals') as any)
+        .insert({
+          user_id: user.id,
+          nome,
+          cargo,
+          especializacao,
+          unidade_saude_id,
+          role,
+          ativo: true
+        })
+        .select()
+        .single()
+      
+      error = insertError
+      if (!error && newProf) {
+        setProfile(newProf)
+      }
+    }
 
     if (error) {
-      toast.error('Erro ao atualizar perfil', { description: error.message })
+      toast.error('Erro ao salvar perfil', { description: error.message })
     } else {
-      toast.success('Perfil atualizado com sucesso!')
-      setProfile({ ...(profile as any), nome, cargo, especializacao })
+      toast.success('Perfil salvo com sucesso!')
+      if (profile?.id) {
+        setProfile((prev: any) => ({ ...prev, nome, cargo, especializacao, unidade_saude_id, role } as any))
+      }
     }
     setSaving(false)
   }
@@ -72,10 +107,12 @@ export default function PerfilPage() {
     )
   }
 
-  if (!profile) {
+  const isNewProfile = !profile
+
+  if (!user) {
     return (
       <div className="p-8 text-center text-slate-400">
-        Perfil não encontrado.
+        Usuário não autenticado.
       </div>
     )
   }
@@ -93,10 +130,10 @@ export default function PerfilPage() {
             <div className="w-24 h-24 rounded-full bg-slate-800 border-2 border-slate-700 flex items-center justify-center mb-4">
               <User className="w-12 h-12 text-slate-500" />
             </div>
-            <h2 className="text-xl font-bold text-slate-100">{profile.nome}</h2>
-            <p className="text-sm text-slate-400 font-medium uppercase tracking-wider mt-1">{profile.role}</p>
+            <h2 className="text-xl font-bold text-slate-100">{profile?.nome || 'Novo Integrante'}</h2>
+            <p className="text-sm text-slate-400 font-medium uppercase tracking-wider mt-1">{profile?.role || 'A DEFNIR'}</p>
             <div className="mt-4 px-3 py-1 bg-teal-500/10 border border-teal-500/20 rounded-full text-xs text-teal-400">
-              {profile.cargo || 'Profissional de Saúde'}
+              {profile?.cargo || 'Profissional de Saúde'}
             </div>
           </CardContent>
         </Card>
@@ -111,28 +148,60 @@ export default function PerfilPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="nome" className="text-slate-300">Nome Completo</Label>
-                  <Input name="nome" id="nome" defaultValue={profile.nome} className="bg-slate-800/50 border-slate-700 text-slate-200" />
+                  <Input name="nome" id="nome" required defaultValue={profile?.nome || ''} className="bg-slate-800/50 border-slate-700 text-slate-200" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-slate-300">Email de Acesso</Label>
-                  <Input id="email" value={user?.email} disabled className="bg-slate-800/20 border-slate-700 text-slate-500 opacity-70" />
+                  <Input id="email" value={user?.email || ''} disabled className="bg-slate-800/20 border-slate-700 text-slate-500 opacity-70" />
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="crm_coren" className="text-slate-300">Registro (CRM/COREN)</Label>
-                  <Input id="crm_coren" value={profile.crm_coren} disabled className="bg-slate-800/20 border-slate-700 text-slate-500 opacity-70" />
+                  <Input id="crm_coren" value={profile?.crm_coren || 'A cadastrar'} disabled className="bg-slate-800/20 border-slate-700 text-slate-500 opacity-70" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="cargo" className="text-slate-300">Cargo</Label>
-                  <Input name="cargo" id="cargo" defaultValue={profile.cargo} placeholder="Ex: Médico Intensivista" className="bg-slate-800/50 border-slate-700 text-slate-200" />
+                  <Input name="cargo" id="cargo" defaultValue={profile?.cargo || ''} placeholder="Ex: Médico Intensivista" className="bg-slate-800/50 border-slate-700 text-slate-200" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="especializacao" className="text-slate-300">Especialização</Label>
-                <Input name="especializacao" id="especializacao" defaultValue={profile.especializacao} placeholder="Ex: Cardiologia" className="bg-slate-800/50 border-slate-700 text-slate-200" />
+                <Input name="especializacao" id="especializacao" defaultValue={profile?.especializacao || ''} placeholder="Ex: Cardiologia" className="bg-slate-800/50 border-slate-700 text-slate-200" />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="unidade_saude_id" className="text-slate-300">Unidade Ativa *</Label>
+                  <select 
+                    name="unidade_saude_id" 
+                    id="unidade_saude_id"
+                    defaultValue={profile?.unidade_saude_id || ''}
+                    required
+                    className="w-full flex h-10 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-slate-200 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="" disabled>Selecione uma unidade</option>
+                    {units.map(u => (
+                      <option key={u.id} value={u.id}>{u.nome}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role" className="text-slate-300">Nível de Acesso (Papel)</Label>
+                  <select 
+                    name="role" 
+                    id="role"
+                    defaultValue={profile?.role || 'MEDICO'}
+                    required
+                    className="w-full flex h-10 rounded-md border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-slate-200 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="MEDICO">Médico(a)</option>
+                    <option value="ENFERMEIRO">Enfermeiro(a)</option>
+                    <option value="ADMIN">Administrador</option>
+                  </select>
+                </div>
               </div>
 
               <div className="pt-4 border-t border-slate-800 flex justify-end">
@@ -154,14 +223,14 @@ export default function PerfilPage() {
               <Building className="w-5 h-5 text-teal-400" />
               <div>
                 <p className="text-xs text-slate-500 font-medium">Unidade Ativa</p>
-                <p className="text-sm text-slate-200">{profile.unidades_saude?.nome || 'Não vinculada'}</p>
+                <p className="text-sm text-slate-200">{profile?.unidades_saude?.nome || 'Não vinculada'}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-4 bg-slate-800/30 rounded-lg border border-slate-700/50">
               <Shield className="w-5 h-5 text-indigo-400" />
               <div>
                 <p className="text-xs text-slate-500 font-medium">Nível de Acesso</p>
-                <p className="text-sm text-slate-200 uppercase">{profile.role}</p>
+                <p className="text-sm text-slate-200 uppercase">{profile?.role || 'A DEFINIR'}</p>
               </div>
             </div>
           </CardContent>

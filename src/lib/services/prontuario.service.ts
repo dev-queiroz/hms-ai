@@ -12,14 +12,10 @@ export type ProntuarioSummary = {
 
 export const prontuarioService = {
   async getProntuarios(): Promise<ProntuarioSummary[]> {
-    const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_KEY!
-    )
+    const supabase = await createClient()
 
     // @ts-ignore
-    const { data: prontuarios, error } = await supabaseAdmin
+    const { data: prontuarios, error } = await supabase
       .from('prontuarios')
       .select(`
         id,
@@ -38,23 +34,43 @@ export const prontuarioService = {
       return []
     }
 
-    // Processar para retornar um sumário fácil de exibir na tabela
+    // Collect all unique professional_ids to batch-fetch names in one query
+    const professionalIds = new Set<string>()
+    for (const p of prontuarios || []) {
+      if (!p.history) continue
+      const arr = Array.isArray(p.history) ? p.history : [p.history]
+      for (const entry of arr) {
+        if ((entry as any).professional_id) professionalIds.add((entry as any).professional_id)
+      }
+    }
+
+    // Fetch professional names in one query
+    const profMap: Record<string, string> = {}
+    if (professionalIds.size > 0) {
+      const { data: profs } = await (supabase
+        .from('professionals') as any)
+        .select('id, nome')
+        .in('id', Array.from(professionalIds))
+      for (const prof of (profs || [])) {
+        profMap[prof.id] = prof.nome
+      }
+    }
+
     return (prontuarios || []).map((p: any) => {
       let ultimo_profissional = '—'
       let ultimo_cid10 = null
       let ultima_atualizacao = p.updated_at
 
       if (p.history) {
-        let historyArray = []
-        if (Array.isArray(p.history)) {
-          historyArray = p.history
-        } else {
-          historyArray = [p.history]
-        }
+        const historyArray = Array.isArray(p.history) ? p.history : [p.history]
 
         if (historyArray.length > 0) {
-          const lastEntry = historyArray[historyArray.length - 1]
-          ultimo_profissional = lastEntry.profissional || lastEntry.professional_id || 'Profissional'
+          const lastEntry = historyArray[historyArray.length - 1] as any
+          // Prioritize stored name, then resolve from map, then fallback
+          ultimo_profissional =
+            lastEntry.profissional ||
+            (lastEntry.professional_id ? profMap[lastEntry.professional_id] : null) ||
+            '—'
           ultimo_cid10 = lastEntry.cid10 || null
           ultima_atualizacao = lastEntry.data || p.updated_at
         }

@@ -5,12 +5,22 @@ import { unidadeService } from '@/lib/services/unidade.service'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
+import { Pagination } from '@/components/common/Pagination'
+import { DeleteButton } from '@/components/common/DeleteButton'
+import { deleteUnidadeAction } from '@/actions/unidade'
 
 export const metadata = {
   title: 'Unidades de Saúde | Hospital IA',
 }
 
-export default async function UnidadesPage() {
+export default async function UnidadesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
+  const params = await searchParams
+  const page = Number(params?.page) || 1
+  const limit = 10
   const supabase = await createClient()
   
   // Verify User Role (Requires Admin role generally, but in this case let's allow "Administrador Principal" or just "Administrador")
@@ -27,8 +37,8 @@ export default async function UnidadesPage() {
 
   const isEditor = userProfile && (userProfile as any).role === 'admin'
 
-  const unidades = await unidadeService.getUnidades()
-  const totalUnidades = unidades.length
+  const { data: unidades, count } = await unidadeService.getUnidades(page, limit)
+  const totalPages = Math.ceil(count / limit)
 
   return (
     <div className="space-y-10 pb-8">
@@ -49,7 +59,7 @@ export default async function UnidadesPage() {
           <div className="flex items-center gap-3">
             <Building2 className="h-6 w-6 text-teal-600" />
             <span className="text-lg font-semibold text-foreground">
-                Total: {totalUnidades} unidade{totalUnidades !== 1 ? 's' : ''} cadastrada{totalUnidades !== 1 ? 's' : ''}
+                Total: {count} unidade{count !== 1 ? 's' : ''} cadastrada{count !== 1 ? 's' : ''}
             </span>
           </div>
         </div>
@@ -106,9 +116,12 @@ export default async function UnidadesPage() {
                                 <Edit className="h-4 w-4" />
                               </Button>
                             </Link>
-                            <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-red-100 hover:text-red-600">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <DeleteButton 
+                              id={item.id} 
+                              action={deleteUnidadeAction} 
+                              title="Excluir Unidade de Saúde?" 
+                              description="Tem certeza que deseja apagar permanentemente esta unidade do sistema?" 
+                            />
                           </>
                         )}
                       </div>
@@ -118,6 +131,9 @@ export default async function UnidadesPage() {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="px-6 py-4 bg-slate-900/50 border-t border-slate-800">
+          <Pagination currentPage={page} totalPages={totalPages} />
         </div>
       </div>
     </div>

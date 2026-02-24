@@ -1,18 +1,43 @@
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-/**
- * Middleware para proteger rotas /dashboard/* e redirecionar usuários não autenticados.
- * Também bloqueia rotas /api/protected/*
- */
 export async function middleware(request: NextRequest) {
-  const token = request.cookies.get('access_token')?.value
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
   const { pathname } = request.nextUrl
   
-  // Rotas que devem ser protegidas
   const isDashboardRoute = pathname.startsWith('/dashboard')
   const isProtectedApiRoute = pathname.startsWith('/api/protected')
 
-  if ((isDashboardRoute || isProtectedApiRoute) && !token) {
+  if ((isDashboardRoute || isProtectedApiRoute) && !user) {
     if (isProtectedApiRoute) {
       return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
     }
@@ -21,22 +46,20 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Se o usuário tentar acessar login estando logado, redireciona para o dashboard
-  // Admins logados podem acessar /register-admin para criar novos usuários, mas não-admins são bloqueados
-  if (pathname.startsWith('/login') && token) {
+  if (pathname.startsWith('/login') && user) {
      return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   // Role-Based Access Control (RBAC)
-  const role = request.cookies.get('user_role')?.value
-  const isAdminRoute = pathname.startsWith('/dashboard/professionals') || pathname.startsWith('/register-admin')
+  // Trust the user_metadata if it exists, otherwise it will fall back to professional role in layout/actions
+  const role = user?.user_metadata?.role
+  const isAdminRoute = pathname.startsWith('/dashboard/professionals') || pathname.startsWith('/dashboard/unidades') || pathname.startsWith('/register-admin')
   
-  if (isAdminRoute && role !== 'ADMINISTRADOR_PRINCIPAL') {
-    // Redireciona usuários sem permissão para o dashboard inicial
+  if (isAdminRoute && role !== 'ADMINISTRADOR_PRINCIPAL' && role !== 'admin') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  return NextResponse.next()
+  return response
 }
 
 export const config = {

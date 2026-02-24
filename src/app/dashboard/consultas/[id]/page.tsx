@@ -8,8 +8,9 @@ export const metadata = {
   title: 'Detalhes da Consulta | Hospital IA',
 }
 
-export default async function ConsultaDetalhesPage({ params }: { params: { id: string } }) {
-  const consulta = await consultaService.getConsultaById(params.id)
+export default async function ConsultaDetalhesPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const consulta = await consultaService.getConsultaById(id)
 
   if (!consulta) {
     return (
@@ -37,7 +38,7 @@ export default async function ConsultaDetalhesPage({ params }: { params: { id: s
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Consulta - #{consulta.id.slice(0, 8)}</h1>
-          <p className="text-muted-foreground mt-1">{new Date(consulta.data_hora).toLocaleDateString('pt-BR')}</p>
+          <p className="text-muted-foreground mt-1">{new Date(consulta.data_hora).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
         </div>
         <Link href="/dashboard/consultas">
           <Button variant="outline">Voltar</Button>
@@ -56,7 +57,7 @@ export default async function ConsultaDetalhesPage({ params }: { params: { id: s
           <CardContent className="space-y-6">
             <div>
               <p className="text-sm text-muted-foreground">Data e Hora</p>
-              <p className="text-xl font-semibold">{new Date(consulta.data_hora).toLocaleString('pt-BR')}</p>
+              <p className="text-xl font-semibold">{new Date(consulta.data_hora).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">CID-10</p>

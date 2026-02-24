@@ -3,7 +3,10 @@ import { Button } from '@/components/ui/button'
 import { Edit, Eye } from 'lucide-react'
 import Link from 'next/link'
 import { consultaService } from '@/lib/services/consulta.service'
+import { Pagination } from '@/components/common/Pagination'
 import { Skeleton } from '@/components/ui/skeleton'
+import { DeleteButton } from '@/components/common/DeleteButton'
+import { deleteConsultaAction } from '@/actions/consulta'
 // Assuming we might not have the complete DataTable component from the frontend module, but let's implement a simple table for now. 
 
 export const metadata = {
@@ -21,9 +24,10 @@ export default async function ConsultasPage({
   const search = params?.query || ''
 
   const { data: consultas, count } = await consultaService.getConsultas(page, limit, search)
+  const totalPages = Math.ceil(count / limit)
 
   return (
-    <div className="space-y-10 pb-8">
+    <div className="space-y-10 pb-8 font-sans">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Consultas</h1>
@@ -68,7 +72,7 @@ export default async function ConsultasPage({
                       {item.professionals?.nome || '—'}
                     </td>
                     <td className="px-6 py-4">
-                      {new Date(item.data_hora).toLocaleDateString('pt-BR')}
+                      {new Date(item.data_hora).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -77,6 +81,17 @@ export default async function ConsultasPage({
                             <Eye className="h-4 w-4" />
                           </Button>
                         </Link>
+                        <Link href={`/dashboard/consultas/${item.id}/editar`}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <DeleteButton 
+                          id={item.id} 
+                          action={deleteConsultaAction} 
+                          title="Excluir Consulta?"
+                          description="Esta ação removerá o registro da consulta. O histórico no prontuário não será removido automaticamente para segurança clínica."
+                        />
                       </div>
                     </td>
                   </tr>
@@ -84,6 +99,10 @@ export default async function ConsultasPage({
               )}
             </tbody>
           </table>
+        </div>
+        
+        <div className="px-6 py-4 bg-slate-900/50 border-t border-slate-800">
+          <Pagination currentPage={page} totalPages={totalPages} />
         </div>
       </div>
     </div>

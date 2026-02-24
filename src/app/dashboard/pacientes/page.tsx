@@ -5,6 +5,10 @@ import { Plus, Search, User, ChevronLeft, ChevronRight } from "lucide-react"
 import { pacienteService } from "@/lib/services/paciente.service"
 import { Input } from "@/components/ui/input"
 import { redirect } from "next/navigation"
+import { Pagination } from "@/components/common/Pagination"
+import { DeleteButton } from "@/components/common/DeleteButton"
+import { deletePacienteAction } from "@/actions/paciente"
+import { Pencil } from "lucide-react"
 
 export const metadata = {
   title: 'Pacientes | Hospital IA',
@@ -96,9 +100,20 @@ export default async function PacientesPage({ searchParams }: PageProps) {
                         <td className="px-6 py-4">{paciente.cpf}</td>
                         <td className="px-6 py-4">{new Date(paciente.data_nasc).toLocaleDateString('pt-BR')}</td>
                         <td className="px-6 py-4">
-                          <Link href={`/dashboard/pacientes/${paciente.id}`} className="text-teal-400 hover:text-teal-300 transition-colors font-medium">
-                            Ver Prontuário
-                          </Link>
+                          <div className="flex items-center gap-3">
+                            <Link href={`/dashboard/pacientes/${paciente.id}`} className="text-teal-400 hover:text-teal-300 transition-colors font-medium">
+                              Ver Prontuário
+                            </Link>
+                            <Link href={`/dashboard/pacientes/${paciente.id}/editar`} className="text-slate-400 hover:text-indigo-400 transition-colors">
+                              <Pencil className="w-4 h-4" />
+                            </Link>
+                            <DeleteButton 
+                              id={paciente.id} 
+                              action={deletePacienteAction} 
+                              title="Excluir Paciente?"
+                              description={`Esta ação removerá permanentemente o registro de ${paciente.nome} e todo seu histórico clínico.`}
+                            />
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -107,45 +122,7 @@ export default async function PacientesPage({ searchParams }: PageProps) {
               </div>
               
               {/* Pagination UI */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-                  <p className="text-sm text-slate-400">
-                    Mostrando <span className="font-medium text-slate-200">{(page - 1) * limit + 1}</span> a <span className="font-medium text-slate-200">{Math.min(page * limit, count)}</span> de <span className="font-medium text-slate-200">{count}</span>
-                  </p>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="border-slate-700 text-slate-300 hover:bg-slate-800 disabled:opacity-50"
-                      disabled={page <= 1}
-                      asChild={page > 1}
-                    >
-                      {page > 1 ? (
-                        <Link href={createPageUrl(page - 1)}>
-                          <ChevronLeft className="w-4 h-4 mr-1" /> Anterior
-                        </Link>
-                      ) : (
-                        <span><ChevronLeft className="w-4 h-4 mr-1" /> Anterior</span>
-                      )}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="border-slate-700 text-slate-300 hover:bg-slate-800 disabled:opacity-50"
-                      disabled={page >= totalPages}
-                      asChild={page < totalPages}
-                    >
-                      {page < totalPages ? (
-                        <Link href={createPageUrl(page + 1)}>
-                          Próxima <ChevronRight className="w-4 h-4 ml-1" />
-                        </Link>
-                      ) : (
-                        <span>Próxima <ChevronRight className="w-4 h-4 ml-1" /></span>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <Pagination currentPage={page} totalPages={totalPages} />
             </div>
           )}
         </CardContent>

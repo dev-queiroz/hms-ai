@@ -47,3 +47,43 @@ export async function createPacienteAction(
     return { error: error.message || 'Erro ao cadastrar paciente.' }
   }
 }
+
+export async function updatePacienteAction(
+  id: string,
+  prevState: any,
+  formData: FormData
+): Promise<CreatePacienteState> {
+  try {
+    const data = {
+      nome: formData.get('nome') as string,
+      cpf: formData.get('cpf') as string,
+      sus_number: formData.get('sus_number') as string,
+      rg: formData.get('rg') as string,
+      data_nasc: formData.get('data_nasc') as string,
+      endereco: formData.get('endereco') as string,
+      contato: formData.get('contato') as string,
+    }
+
+    const validated = pacienteSchema.parse(data)
+
+    await pacienteService.updatePaciente(id, validated)
+    
+    revalidatePath('/dashboard/pacientes')
+    revalidatePath(`/dashboard/pacientes/${id}`)
+
+    return { success: true }
+  } catch (error: any) {
+    console.error('Erro updatePacienteAction:', error)
+    return { error: error.message || 'Erro ao atualizar paciente.' }
+  }
+}
+
+export async function deletePacienteAction(id: string) {
+  try {
+    await pacienteService.deletePaciente(id)
+    revalidatePath('/dashboard/pacientes')
+    return { success: true }
+  } catch (error: any) {
+    return { error: error.message || 'Erro ao excluir paciente.' }
+  }
+}
