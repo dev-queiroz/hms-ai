@@ -1,7 +1,7 @@
 import { pacienteService } from '@/lib/services/paciente.service'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import ConsultaForm from '@/components/forms/ConsultaForm'
+import ConsultaForm from './ConsultaForm'
 
 export const metadata = {
   title: 'Nova Consulta | Hospital IA',

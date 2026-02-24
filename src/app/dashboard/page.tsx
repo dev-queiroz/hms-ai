@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   const unitId = isAdmin ? undefined : (professional as any)?.unidade_saude_id
   const unitName = (professional as any)?.unidades_saude?.nome || 'Gestão Global'
 
-  const stats = await dashboardService.getStats(unitId)
+  const stats = await dashboardService.getStats()
 
   const cards = [
     {

@@ -46,29 +46,3 @@ export async function createConsultaAction(
     return { error: error.message || 'Erro ao registrar consulta.' }
   }
 }
-
-export async function updateConsultaAction(id: string, prevState: any, formData: FormData) {
-  const data = {
-    observacoes: formData.get('observacoes') as string,
-    cid10: (formData.get('cid10') as string) || undefined,
-  }
-
-  try {
-    await consultaService.updateConsulta(id, data)
-    revalidatePath('/dashboard/consultas')
-    revalidatePath(`/dashboard/consultas/${id}`)
-    return { success: true }
-  } catch (error: any) {
-    return { error: error.message || 'Erro ao atualizar consulta' }
-  }
-}
-
-export async function deleteConsultaAction(id: string) {
-  try {
-    await consultaService.deleteConsulta(id)
-    revalidatePath('/dashboard/consultas')
-    return { success: true }
-  } catch (error: any) {
-    return { error: error.message || 'Erro ao excluir consulta' }
-  }
-}

@@ -58,7 +58,7 @@ export default async function PacienteDetailPage({
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-400 ml-10">
             <span><span className="text-slate-500">CPF:</span> {paciente.cpf}</span>
-            <span><span className="text-slate-500">Nasc:</span> {new Date(paciente.data_nasc).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</span>
+            <span><span className="text-slate-500">Nasc:</span> {new Date(paciente.data_nasc).toLocaleDateString('pt-BR')}</span>
             <span><span className="text-slate-500">SUS:</span> {paciente.sus_number}</span>
           </div>
         </div>
@@ -166,7 +166,7 @@ export default async function PacienteDetailPage({
                         </span>
                         <span className="text-[10px] text-slate-500 flex items-center">
                           <Clock className="w-3 h-3 mr-1" />
-                          {new Date(triagem.data_hora).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+                          {new Date(triagem.data_hora).toLocaleDateString('pt-BR')}
                         </span>
                       </div>
                       <p className="text-xs text-slate-300 line-clamp-2">
@@ -224,7 +224,7 @@ export default async function PacienteDetailPage({
                               <span className="font-bold text-slate-200">{nota.profissional || 'Profissional'}</span>
                             </div>
                             <span className="text-[11px] font-mono text-slate-500 bg-slate-900/50 px-2 py-1 rounded">
-                              {nota.data ? new Date(nota.data).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : 'Sem data'}
+                              {nota.data ? new Date(nota.data).toLocaleString('pt-BR') : 'Sem data'}
                             </span>
                           </div>
                           <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">

@@ -12,8 +12,6 @@ const roleLabels: Record<string, { label: string; color: string }> = {
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { Pagination } from "@/components/common/Pagination"
-import { DeleteButton } from "@/components/common/DeleteButton"
-import { deleteProfessionalAction } from "@/actions/professionals"
 
 export default async function ProfessionalsPage({
   searchParams,
@@ -51,7 +49,7 @@ export default async function ProfessionalsPage({
           <p className="text-slate-400">Gerenciamento de médicos, enfermeiros e administradores.</p>
         </div>
         <Button asChild className="bg-indigo-600 hover:bg-indigo-700 text-white">
-          <Link href="/dashboard/professionals/criar">
+          <Link href="/register-admin">
             <UserPlus className="w-4 h-4 mr-2" />
             Novo Profissional
           </Link>
@@ -93,19 +91,11 @@ export default async function ProfessionalsPage({
                           {roleInfo.label}
                         </span>
                         {isAdmin && (
-                          <>
-                            <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-400">
-                              <Link href={`/dashboard/professionals/${prof.id}/editar`}>
-                                <Pencil className="w-4 h-4" />
-                              </Link>
-                            </Button>
-                            <DeleteButton 
-                              id={prof.id} 
-                              action={deleteProfessionalAction} 
-                              title="Excluir Profissional?"
-                              description={`Tem certeza que deseja remover ${prof.nome} da equipe?`}
-                            />
-                          </>
+                          <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-indigo-400">
+                            <Link href={`/dashboard/professionals/${prof.id}/editar`}>
+                              <Pencil className="w-4 h-4" />
+                            </Link>
+                          </Button>
                         )}
                       </div>
                     </div>

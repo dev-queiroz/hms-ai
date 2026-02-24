@@ -60,35 +60,3 @@ export async function createPrescricaoAction(
     return { error: error.message || 'Erro ao criar prescrição' }
   }
 }
-
-export async function updatePrescricaoAction(
-  id: string,
-  prevState: CreatePrescricaoState | null,
-  formData: FormData
-): Promise<CreatePrescricaoState> {
-  try {
-    const rawData = Object.fromEntries(formData.entries())
-    const validated = createPrescricaoSchema.parse(rawData)
-
-    let medicamentos = []
-    try {
-      medicamentos = JSON.parse(validated.medicamentosJson)
-    } catch {
-      return { error: 'Formato de medicamentos inválido.' }
-    }
-
-    await prescricaoService.updatePrescricao(id, {
-      medicamentos,
-      observacoes: validated.observacoes,
-      cid10: validated.cid10
-    })
-
-    revalidatePath('/dashboard/prescricoes')
-    revalidatePath(`/dashboard/prescricoes/${id}`)
-
-    return { success: true }
-  } catch (error: any) {
-    console.error('Erro em updatePrescricaoAction:', error)
-    return { error: error.message || 'Erro ao atualizar prescrição' }
-  }
-}

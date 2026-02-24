@@ -50,7 +50,7 @@ export async function createPacienteAction(
 
 export async function updatePacienteAction(
   id: string,
-  prevState: any,
+  prevState: CreatePacienteState | null,
   formData: FormData
 ): Promise<CreatePacienteState> {
   try {
@@ -68,22 +68,12 @@ export async function updatePacienteAction(
 
     await pacienteService.updatePaciente(id, validated)
     
+    // Revalidar cache da lista de pacientes
     revalidatePath('/dashboard/pacientes')
-    revalidatePath(`/dashboard/pacientes/${id}`)
 
     return { success: true }
   } catch (error: any) {
     console.error('Erro updatePacienteAction:', error)
     return { error: error.message || 'Erro ao atualizar paciente.' }
-  }
-}
-
-export async function deletePacienteAction(id: string) {
-  try {
-    await pacienteService.deletePaciente(id)
-    revalidatePath('/dashboard/pacientes')
-    return { success: true }
-  } catch (error: any) {
-    return { error: error.message || 'Erro ao excluir paciente.' }
   }
 }

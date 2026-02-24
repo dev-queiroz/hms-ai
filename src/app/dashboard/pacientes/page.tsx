@@ -6,9 +6,6 @@ import { pacienteService } from "@/lib/services/paciente.service"
 import { Input } from "@/components/ui/input"
 import { redirect } from "next/navigation"
 import { Pagination } from "@/components/common/Pagination"
-import { DeleteButton } from "@/components/common/DeleteButton"
-import { deletePacienteAction } from "@/actions/paciente"
-import { Pencil } from "lucide-react"
 
 export const metadata = {
   title: 'Pacientes | Hospital IA',
@@ -100,20 +97,9 @@ export default async function PacientesPage({ searchParams }: PageProps) {
                         <td className="px-6 py-4">{paciente.cpf}</td>
                         <td className="px-6 py-4">{new Date(paciente.data_nasc).toLocaleDateString('pt-BR')}</td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <Link href={`/dashboard/pacientes/${paciente.id}`} className="text-teal-400 hover:text-teal-300 transition-colors font-medium">
-                              Ver Prontuário
-                            </Link>
-                            <Link href={`/dashboard/pacientes/${paciente.id}/editar`} className="text-slate-400 hover:text-indigo-400 transition-colors">
-                              <Pencil className="w-4 h-4" />
-                            </Link>
-                            <DeleteButton 
-                              id={paciente.id} 
-                              action={deletePacienteAction} 
-                              title="Excluir Paciente?"
-                              description={`Esta ação removerá permanentemente o registro de ${paciente.nome} e todo seu histórico clínico.`}
-                            />
-                          </div>
+                          <Link href={`/dashboard/pacientes/${paciente.id}`} className="text-teal-400 hover:text-teal-300 transition-colors font-medium">
+                            Ver Prontuário
+                          </Link>
                         </td>
                       </tr>
                     ))}

@@ -21,73 +21,56 @@ const NAV_ITEMS = [
     title: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
-    roles: ['ADMINISTRADOR_PRINCIPAL', 'MEDICO', 'ENFERMEIRO', 'admin', 'professional']
   },
   {
     title: 'Consultas',
     href: '/dashboard/consultas',
     icon: Stethoscope,
-    roles: ['ADMINISTRADOR_PRINCIPAL', 'MEDICO', 'ENFERMEIRO', 'admin', 'professional']
   },
   {
     title: 'Fila de Triagem',
     href: '/dashboard/triagens',
     icon: Activity,
-    roles: ['ADMINISTRADOR_PRINCIPAL', 'MEDICO', 'ENFERMEIRO', 'admin', 'professional']
   },
   {
     title: 'Prontuários',
     href: '/dashboard/prontuarios',
     icon: FileText,
-    roles: ['ADMINISTRADOR_PRINCIPAL', 'MEDICO', 'ENFERMEIRO', 'admin', 'professional']
   },
   {
     title: 'Prescrições',
     href: '/dashboard/prescricoes',
-    icon: FileText,
-    roles: ['ADMINISTRADOR_PRINCIPAL', 'MEDICO', 'ENFERMEIRO', 'admin', 'professional']
+    icon: FileText, // We can reuse FileText, or Pill if available, let's use FileText
   },
   {
     title: 'Pacientes',
     href: '/dashboard/pacientes',
     icon: Users,
-    roles: ['ADMINISTRADOR_PRINCIPAL', 'MEDICO', 'ENFERMEIRO', 'admin', 'professional']
   },
   {
     title: 'Unidades de Saúde',
     href: '/dashboard/unidades',
     icon: Building2,
-    roles: ['ADMINISTRADOR_PRINCIPAL', 'admin']
   },
   {
     title: 'Inteligência Artificial',
     href: '/dashboard/ia',
     icon: Brain,
-    roles: ['ADMINISTRADOR_PRINCIPAL', 'admin']
   },
   {
     title: 'Profissionais',
     href: '/dashboard/professionals',
     icon: Stethoscope,
-    roles: ['ADMINISTRADOR_PRINCIPAL', 'admin']
   }
 ]
 
-interface SidebarProps {
-  userRole?: string
-}
-
-export function Sidebar({ userRole = 'professional' }: SidebarProps) {
+export function Sidebar() {
   const pathname = usePathname()
 
   const handleLogout = async () => {
     await logoutAction()
     window.location.href = '/login'
   }
-
-  const filteredItems = NAV_ITEMS.filter(item => 
-    item.roles.includes(userRole as any)
-  )
 
   return (
     <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col h-screen fixed left-0 top-0">
@@ -101,7 +84,7 @@ export function Sidebar({ userRole = 'professional' }: SidebarProps) {
       </div>
 
       <div className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
-        {filteredItems.map((item) => {
+        {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           const Icon = item.icon
           

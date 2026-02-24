@@ -38,8 +38,11 @@ export async function registerAdminAction(
   }
 
   // Bypass RLS for registration using Service Role Key
-  // We use the centralized admin client
-  const { supabaseAdmin } = require('@/lib/supabase/admin')
+  // We use createClient from @supabase/supabase-js directly to avoid SSR cookies logic for the admin insert
+  const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY!
+  const supabaseAdmin = createSupabaseClient(supabaseUrl, supabaseKey)
 
   // 1. Criar Auth User
   const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({

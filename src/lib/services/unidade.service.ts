@@ -13,13 +13,17 @@ export type UnidadeSaudeSummary = {
 
 export const unidadeService = {
   async getUnidades(page: number = 1, limit: number = 20): Promise<{ data: UnidadeSaudeSummary[], count: number }> {
-    const supabase = await createClient()
+    const { createClient: createSupabaseClient } = require('@supabase/supabase-js')
+    const supabaseAdmin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_KEY!
+    )
 
     const from = (page - 1) * limit
     const to = from + limit - 1
 
     // @ts-ignore
-    const { data: unidades, error, count } = await supabase
+    const { data: unidades, error, count } = await supabaseAdmin
       .from('unidades_saude')
       .select(`
         id,

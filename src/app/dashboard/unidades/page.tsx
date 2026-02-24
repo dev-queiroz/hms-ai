@@ -6,8 +6,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Pagination } from '@/components/common/Pagination'
-import { DeleteButton } from '@/components/common/DeleteButton'
-import { deleteUnidadeAction } from '@/actions/unidade'
 
 export const metadata = {
   title: 'Unidades de Saúde | Hospital IA',
@@ -116,12 +114,9 @@ export default async function UnidadesPage({
                                 <Edit className="h-4 w-4" />
                               </Button>
                             </Link>
-                            <DeleteButton 
-                              id={item.id} 
-                              action={deleteUnidadeAction} 
-                              title="Excluir Unidade de Saúde?" 
-                              description="Tem certeza que deseja apagar permanentemente esta unidade do sistema?" 
-                            />
+                            <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-red-100 hover:text-red-600">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </>
                         )}
                       </div>

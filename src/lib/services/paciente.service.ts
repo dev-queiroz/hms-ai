@@ -3,9 +3,6 @@ import { Database } from '@/lib/types/supabase'
 
 type PacienteInsert = Database['public']['Tables']['patients']['Insert']
 type PacienteRow = Database['public']['Tables']['patients']['Row']
-type TriagemInsert = Database['public']['Tables']['triagens']['Insert']
-type TriagemRow = Database['public']['Tables']['triagens']['Row']
-type ProntuarioRow = Database['public']['Tables']['prontuarios']['Row']
 
 export const pacienteService = {
   async getPacientes(page: number = 1, limit: number = 10, search?: string): Promise<{ data: PacienteRow[], count: number }> {
@@ -29,28 +26,11 @@ export const pacienteService = {
       console.error('Erro ao buscar pacientes:', error)
       return { data: [], count: 0 }
     }
-    return { data: (data as PacienteRow[]) || [], count: count || 0 }
+    return { data: data || [], count: count || 0 }
   },
   
   async getPacienteById(id: string): Promise<PacienteRow | null> {
     const supabase = await createClient()
-    
-    // Tenta primeiro a view decriptada (padrao pg_sodium do Supabase)
-    try {
-      const { data: viewData, error: viewError } = await supabase
-        .from('decrypted_patients' as any)
-        .select('*')
-        .eq('id', id)
-        .single()
-
-      if (!viewError && viewData) {
-        return viewData as any
-      }
-    } catch (e) {
-      console.warn('View decrypted_patients não encontrada, usando tabela padrão.')
-    }
-
-    // Fallback para a tabela patients
     const { data, error } = await supabase
       .from('patients')
       .select('*')
@@ -61,8 +41,7 @@ export const pacienteService = {
       console.error('Erro ao buscar paciente:', error)
       return null
     }
-
-    return data as any
+    return data
   },
 
   async createPaciente(data: Partial<PacienteInsert>) {
@@ -76,7 +55,8 @@ export const pacienteService = {
 
     const { data: newPaciente, error } = await supabase
       .from('patients')
-      .insert(data as PacienteInsert)
+      // @ts-ignore
+      .insert([data])
       .select()
       .single()
 
@@ -91,7 +71,8 @@ export const pacienteService = {
     const supabase = await createClient()
     const { data: updatedPaciente, error } = await supabase
       .from('patients')
-      .update(data as any)
+      // @ts-ignore
+      .update(data)
       .eq('id', id)
       .select()
       .single()
@@ -100,7 +81,7 @@ export const pacienteService = {
       console.error('Erro ao atualizar paciente:', error)
       throw new Error(error.message)
     }
-    return updatedPaciente as PacienteRow
+    return updatedPaciente
   },
 
   async deletePaciente(id: string) {
@@ -117,7 +98,7 @@ export const pacienteService = {
     return true
   },
 
-  async getProntuarioByPatientId(patientId: string): Promise<ProntuarioRow | null> {
+  async getProntuarioByPatientId(patientId: string): Promise<Database['public']['Tables']['prontuarios']['Row'] | null> {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('prontuarios')
@@ -129,10 +110,11 @@ export const pacienteService = {
       console.error('Erro ao buscar prontuário:', error)
       return null
     }
-    return data as ProntuarioRow
+    // @ts-ignore - bypassing strict generic check
+    return data
   },
 
-  async getTriagensByPatientId(patientId: string): Promise<TriagemRow[]> {
+  async getTriagensByPatientId(patientId: string): Promise<Database['public']['Tables']['triagens']['Row'][]> {
     const supabase = await createClient()
     const { data, error } = await supabase
       .from('triagens')
@@ -144,32 +126,23 @@ export const pacienteService = {
       console.error('Erro ao buscar triagens:', error)
       return []
     }
-    return (data as TriagemRow[]) || []
+    // @ts-ignore
+    return data || []
   },
 
   async createTriagem(data: any) {
     const supabase = await createClient()
-    // Support both naming conventions from different callers
-    const patientId = data.patient_id || data.pacienteId
-    const professionalId = data.professional_id || data.professionalId
-
-    const { data: newTriagem, error } = await (supabase
-      .from('triagens') as any)
-      .insert({
-        patient_id: patientId,
-        professional_id: professionalId,
-        sinais_vitais: data.sinais_vitais,
-        sintomas: data.sintomas,
-        classificacao_risco: data.classificacao_risco,
-        data_hora: new Date().toISOString()
-      })
+    const { data: newTriagem, error } = await supabase
+      .from('triagens')
+      // @ts-ignore
+      .insert([data])
       .select()
       .single()
 
     if (error) {
-      throw new Error(`Erro ao criar triagem: ${error.message}`)
+      console.error('Erro ao criar triagem:', error)
+      throw new Error(error.message)
     }
-
     return newTriagem
   },
 

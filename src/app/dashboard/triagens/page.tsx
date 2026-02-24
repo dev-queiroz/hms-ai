@@ -79,7 +79,7 @@ export default async function TriagensPage({ searchParams }: PageProps) {
                         <td className="px-6 py-4 whitespace-nowrap text-slate-400">
                           <div className="flex items-center gap-2">
                             <Clock className="w-3 h-3" />
-                            {new Date(t.data_hora).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+                            {new Date(t.data_hora).toLocaleString('pt-BR')}
                           </div>
                         </td>
                         <td className="px-6 py-4">

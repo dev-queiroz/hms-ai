@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createPrescricaoAction, updatePrescricaoAction } from '@/actions/prescricao'
+import { createPrescricaoAction } from '@/actions/prescricao'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -20,21 +20,13 @@ type Medicamento = {
   via: string
 }
 
-export default function PrescricaoForm({ 
-  pacientes, 
-  professional,
-  initialData 
-}: { 
-  pacientes: any[], 
-  professional: any,
-  initialData?: any
-}) {
+export default function PrescricaoForm({ pacientes, professional }: { pacientes: any[], professional: any }) {
   const router = useRouter()
   const [isPending, setIsPending] = useState(false)
-  const [pacienteId, setPacienteId] = useState(initialData?.patient_id || '')
-  const [medicamentos, setMedicamentos] = useState<Medicamento[]>(
-    initialData?.detalhes?.medicamentos || [{ nome: '', dosagem: '', frequencia: '', via: 'Uso Oral' }]
-  )
+  const [pacienteId, setPacienteId] = useState('')
+  const [medicamentos, setMedicamentos] = useState<Medicamento[]>([
+    { nome: '', dosagem: '', frequencia: '', via: 'Uso Oral' }
+  ])
 
   const addMedicamento = () => {
     setMedicamentos([...medicamentos, { nome: '', dosagem: '', frequencia: '', via: 'Uso Oral' }])
@@ -67,19 +59,13 @@ export default function PrescricaoForm({
     formData.append('pacienteId', pacienteId)
     formData.append('medicamentosJson', JSON.stringify(validMeds))
 
-    let result
-    if (initialData?.id) {
-      result = await updatePrescricaoAction(initialData.id, null, formData)
-    } else {
-      result = await createPrescricaoAction(null, formData)
-    }
-    
+    const result = await createPrescricaoAction(null, formData)
     setIsPending(false)
 
     if (result?.error) {
       toast.error(result.error)
     } else if (result?.success) {
-      toast.success(initialData?.id ? 'Prescrição atualizada!' : 'Prescrição emitida com sucesso!')
+      toast.success('Prescrição emitida com sucesso!')
       router.push('/dashboard/prescricoes')
     }
   }
@@ -174,7 +160,7 @@ export default function PrescricaoForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="cid10">CID-10 Principal (Opcional)</Label>
-              <Input id="cid10" name="cid10" placeholder="Ex: A09.9" defaultValue={initialData?.detalhes?.cid10 || ''} />
+              <Input id="cid10" name="cid10" placeholder="Ex: A09.9" />
             </div>
           </div>
 
@@ -185,7 +171,6 @@ export default function PrescricaoForm({
               name="observacoes"
               placeholder="Instruções adicionais para o paciente..."
               className="min-h-24"
-              defaultValue={initialData?.detalhes?.observacoes || ''}
             />
           </div>
 

@@ -60,16 +60,3 @@ export async function updateUnidadeAction(id: string, prevState: any, formData: 
     return { error: error.message || 'Erro ao atualizar unidade' }
   }
 }
-
-export async function deleteUnidadeAction(id: string) {
-  try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
-    const { error } = await supabase.from('unidades_saude').delete().eq('id', id)
-    if (error) throw error
-    revalidatePath('/dashboard/unidades')
-    return { success: true }
-  } catch (error: any) {
-    return { error: error.message || 'Erro ao excluir unidade' }
-  }
-}

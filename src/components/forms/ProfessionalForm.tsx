@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { FormError } from '@/components/common/FormError'
-import { createProfessionalAction, updateProfessionalAction } from '@/actions/professionals'
+import { updateProfessionalAction } from '@/actions/professionals'
 import { User, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 
@@ -29,24 +29,17 @@ export function ProfessionalForm({ professional, unidades }: ProfessionalFormPro
     setError(null)
     
     const formData = new FormData(e.currentTarget)
-    const result = professional?.id 
-      ? await updateProfessionalAction(professional.id, null, formData)
-      : await createProfessionalAction(null, formData)
+    const result = await updateProfessionalAction(professional.id, null, formData)
     
     if (result.error) {
       setError(result.error)
-      toast.error(professional?.id ? 'Erro ao atualizar' : 'Erro ao cadastrar', { description: result.error })
+      toast.error('Erro ao atualizar', { description: result.error })
       setLoading(false)
     } else if (result.success) {
-      toast.success(professional?.id ? 'Profissional atualizado!' : 'Profissional cadastrado!', { 
-        description: professional?.id ? 'Os dados da equipe foram salvos.' : 'O novo integrante foi adicionado à equipe.'
-      })
+      toast.success('Profissional atualizado!', { description: 'Os dados da equipe foram salvos.' })
       router.push('/dashboard/professionals')
     }
   }
-
-  const isEdit = !!professional?.id
-
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto font-sans">
@@ -60,11 +53,9 @@ export function ProfessionalForm({ professional, unidades }: ProfessionalFormPro
             <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
                 <User className="w-6 h-6" />
             </div>
-             <div>
-                <h1 className="text-3xl font-bold tracking-tight text-slate-100 uppercase">{isEdit ? 'Editar Profissional' : 'Novo Profissional'}</h1>
-                <p className="text-slate-400">
-                  {isEdit ? `Gerencie permissões e vínculos de ${professional.nome}.` : 'Cadastre um novo integrante na equipe de saúde.'}
-                </p>
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight text-slate-100 uppercase">Editar Profissional</h1>
+                <p className="text-slate-400">Gerencie permissões e vínculos de {professional.nome}.</p>
             </div>
         </div>
       </div>
@@ -78,7 +69,7 @@ export function ProfessionalForm({ professional, unidades }: ProfessionalFormPro
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="nome" className="text-slate-300">Nome Completo *</Label>
-              <Input name="nome" id="nome" required defaultValue={professional?.nome || ''} className="bg-slate-800/50 border-slate-700 text-slate-200 focus:ring-indigo-500" />
+              <Input name="nome" id="nome" required defaultValue={professional.nome} className="bg-slate-800/50 border-slate-700 text-slate-200 focus:ring-indigo-500" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -91,7 +82,7 @@ export function ProfessionalForm({ professional, unidades }: ProfessionalFormPro
                 <select 
                   name="role" 
                   id="role" 
-                  defaultValue={professional?.role || 'professional'}
+                  defaultValue={professional.role}
                   className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-800/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 text-slate-200"
                 >
                   <option value="professional" className="bg-slate-900">Profissional</option>
@@ -107,12 +98,12 @@ export function ProfessionalForm({ professional, unidades }: ProfessionalFormPro
 
             <div className="space-y-2">
               <Label htmlFor="unidade_saude_id" className="text-slate-300">Unidade de Saúde Atribuída</Label>
-                <select 
-                  name="unidade_saude_id" 
-                  id="unidade_saude_id" 
-                  defaultValue={professional?.unidade_saude_id || ''}
-                  className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-800/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 text-slate-200"
-                >
+              <select 
+                name="unidade_saude_id" 
+                id="unidade_saude_id" 
+                defaultValue={professional.unidade_saude_id || ''}
+                className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-800/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 text-slate-200"
+              >
                 <option value="" className="bg-slate-900">— Nenhuma atribuída —</option>
                 {unidades.map(u => (
                   <option key={u.id} value={u.id} className="bg-slate-900">{u.nome}</option>
@@ -127,7 +118,7 @@ export function ProfessionalForm({ professional, unidades }: ProfessionalFormPro
                 Cancelar
               </Button>
               <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[150px] shadow-lg shadow-indigo-900/20" disabled={loading}>
-                {loading ? <LoadingSpinner className="text-white" /> : isEdit ? 'Salvar Alterações' : 'Cadastrar Profissional'}
+                {loading ? <LoadingSpinner className="text-white" /> : 'Salvar Alterações'}
               </Button>
             </div>
           </form>

@@ -2,16 +2,32 @@ import { Button } from '@/components/ui/button'
 import { FileDown, Eye, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { prescricaoService } from '@/lib/services/prescricao.service'
-import { checkPermission, MEDICAL_ROLES } from '@/lib/auth/rbac'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
 export const metadata = {
   title: 'Prescrições | Hospital IA',
 }
 
 export default async function PrescricoesPage() {
-  const { authorized, role } = await checkPermission(MEDICAL_ROLES)
+  const supabase = await createClient()
+  
+  // Verify User and Role
+  const { data: authData } = await supabase.auth.getUser()
+  if (!authData.user) {
+    redirect('/login')
+  }
 
-  if (!authorized) {
+  const { data: userProfile } = await supabase
+    .from('professionals')
+    .select('role, cargo')
+    .eq('user_id', authData.user.id)
+    .single()
+
+  const role = (userProfile as any)?.role
+  const isAllowed = role === 'admin' || role === 'professional'
+
+  if (!userProfile || !isAllowed) {
     return (
       <div className="space-y-8">
         <div>
@@ -19,7 +35,7 @@ export default async function PrescricoesPage() {
           <p className="text-muted-foreground mt-1">Acesso Negado</p>
         </div>
         <div className="p-4 bg-destructive/15 text-destructive rounded-md">
-          Você não tem permissão para acessar esta página. Sua role ({role}) não permite gerenciar prescrições.
+          Você não tem permissão para acessar esta página. Apenas médicos e enfermeiros podem gerenciar prescrições.
         </div>
       </div>
     )
@@ -71,7 +87,7 @@ export default async function PrescricoesPage() {
                       <div className="font-medium text-foreground">{item.paciente_nome}</div>
                     </td>
                     <td className="px-6 py-4">{item.medico_nome}</td>
-                    <td className="px-6 py-4">{new Date(item.data_criacao).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</td>
+                    <td className="px-6 py-4">{new Date(item.data_criacao).toLocaleString('pt-BR')}</td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Link href={`/api/prescricoes/${item.id}/pdf`} target="_blank">

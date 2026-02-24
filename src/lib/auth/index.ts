@@ -11,18 +11,13 @@ export async function getCurrentUser(): Promise<UserSession | null> {
     return null
   }
 
-  // Fetch role from the professional table via admin client to bypass RLS for this specific check
-  const { supabaseAdmin } = require('../supabase/admin')
-  const { data: professional } = await supabaseAdmin
-    .from('professionals')
-    .select('role')
-    .eq('user_id', user.id)
-    .single()
+  const cookieStore = await cookies()
+  const roleCookie = cookieStore.get('user_role')?.value as UserRole | undefined
 
   return {
     id: user.id,
     email: user.email!,
-    role: (professional?.role as UserRole) || 'professional',
+    role: roleCookie || 'admin', // Default role for now
   }
 }
 

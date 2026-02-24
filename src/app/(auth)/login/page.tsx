@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import Image from 'next/image'
 import { loginAction } from '@/actions/auth'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -58,7 +59,7 @@ export default function LoginPage() {
       <CardHeader className="space-y-2 text-center">
         <div className="flex justify-center mb-4">
           <div className="w-12 h-12 bg-gradient-to-tr from-teal-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-teal-500/20">
-            <span className="text-white font-bold text-xl">H</span>
+            <Image src="/logo-hospital-ia.svg" alt="Logo" width={48} height={48} />
           </div>
         </div>
         <CardTitle className="text-2xl font-bold tracking-tight">Login</CardTitle>

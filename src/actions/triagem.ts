@@ -17,15 +17,15 @@ const triagemSchema = z.object({
   observacoes: z.string().optional(),
 })
 
-export type CreateTriagemActionState = {
+export type CreateTriagemState = {
   error?: string
   success?: boolean
 }
 
 export async function createTriagemAction(
-  prevState: CreateTriagemActionState | null,
+  prevState: CreateTriagemState | null,
   formData: FormData
-): Promise<CreateTriagemActionState> {
+): Promise<CreateTriagemState> {
   try {
     const rawData = {
       patient_id: formData.get('patientId') as string,
@@ -41,24 +41,26 @@ export async function createTriagemAction(
 
     const validated = triagemSchema.parse(rawData)
 
-    // Pegar profissional logado via Supabase
+    // Pegar profissional logado
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: authData } = await supabase.auth.getUser()
     
-    if (!user) throw new Error('Usuário não autenticado')
-
-    // Buscar o registro do profissional na tabela professionals
-    const { data: professional } = await (supabase
-      .from('professionals') as any)
-      .select('id')
-      .eq('user_id', user.id)
-      .single()
+    // Buscar o registro do profissional na tabela professionals pelo auth.uid()
+    let professionalId: string | null = null
+    if (authData.user?.id) {
+      const { data: professional } = await supabase
+        .from('professionals')
+        .select('id')
+        .eq('user_id', authData.user.id)
+        .single()
+      
+      if (professional) {
+        professionalId = (professional as any).id
+      }
+    }
     
-    if (!professional) throw new Error('Apenas profissionais podem realizar triagem')
-    
-    const dbData = {
+    const dbData: any = {
       patient_id: validated.patient_id,
-      professional_id: professional.id,
       sintomas: validated.sintomas,
       classificacao_risco: validated.classificacao_risco.toLowerCase(),
       sinais_vitais: {
@@ -71,10 +73,14 @@ export async function createTriagemAction(
       data_hora: new Date().toISOString()
     }
 
-    await pacienteService.createTriagem(dbData as any)
+    // Só adiciona professional_id se o profissional existe no banco
+    if (professionalId) {
+      dbData.professional_id = professionalId
+    }
+
+    await pacienteService.createTriagem(dbData)
     
     revalidatePath(`/dashboard/pacientes/${validated.patient_id}`)
-    revalidatePath('/dashboard/triagens')
 
     return { success: true }
   } catch (error: any) {
